@@ -1,15 +1,18 @@
+using Microsoft.EntityFrameworkCore;
+using NET10Features.WebAPI.Context;
 using Scalar.AspNetCore;
 using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
+builder.Services.AddDbContext<ApplicationDbContext>(opt =>
+{
+    opt.UseInMemoryDatabase("MyDb");
+});
 
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-
-app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
@@ -59,6 +62,35 @@ app.MapPost("/enhanced-from-validation",
     {
         return TypedResults.Ok(new { email, name });
     });
+#endregion
+
+#region EF Core Left/Right Join
+app.MapGet("efcore-left-rigt-join", (ApplicationDbContext dbContext) =>
+{
+    var res1 = dbContext.Products
+    .LeftJoin(dbContext.Categories, t => t.CategoryId, t => t.Id, (product, category) => new { product, category })
+    .Select(s => new
+    {
+        Id = s.product.Id,
+        Name = s.product.Name,
+        CaegoryId = s.category!.Id,
+        CategoryName = s.category.Name
+    })
+    .ToList();
+
+    var res2 = dbContext.Products
+    .RightJoin(dbContext.Categories, t => t.CategoryId, t => t.Id, (product, category) => new { product, category })
+    .Select(s => new
+    {
+        Id = s.product == null ? Guid.CreateVersion7() : s.product.Id,
+        Name = s.product == null ? "" : s.product.Name,
+        CaegoryId = s.category!.Id,
+        CategoryName = s.category.Name
+    })
+    .ToList();
+
+    return Results.Ok(new { res1, res2 });
+});
 #endregion
 
 app.Run();
