@@ -4,6 +4,7 @@
 - [ ] Extension Members
 - [ ] Null-Conditional Member Access on Assignment
 - [ ] Enhanced Form Validation
+- [ ] EF Core Left/Right Join
 
 ### Kaynak 1
 <a href="https://learn.microsoft.com/tr-tr/dotnet/core/whats-new/dotnet-10/overview">Microsoft Documentation</a>
